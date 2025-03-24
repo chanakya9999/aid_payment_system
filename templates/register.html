@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Payment System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 20px; /* Reduced padding to decrease height */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            flex-grow: 1;
+            text-align: center; /* Center the title */
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .theme-btn {
+            background-color: #666;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .theme-btn:hover {
+            background-color: #555;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 600px; /* Increased container size */
+            text-align: center;
+            margin: 20px auto;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #06d6a0;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #05c28e;
+        }
+        #video {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        #canvas {
+            display: none;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #e0f7e9;
+            color: #06d6a0;
+        }
+        .error {
+            background-color: #ffe6e6;
+            color: #ff6b6b;
+        }
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        body.dark-mode header {
+            background-color: #2c2c2c;
+        }
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+        body.dark-mode h2,
+        body.dark-mode label {
+            color: #e0e0e0;
+        }
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="tel"] {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Aid Payment System</h1>
+        <div class="header-right">
+            <button class="theme-btn" onclick="toggleTheme()">Toggle Theme</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Register New User</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ 'success' if 'success' in message else 'error' }}">{{ message | safe }}</div>
+            {% endfor %}
+        {% endif %}
+        <form id="registerForm">
+            <label for="initial_balance">Initial Balance (Rs):</label>
+            <input type="number" id="initial_balance" name="initial_balance" required>
+
+            <label for="pin">PIN (at least 4 characters):</label>
+            <input type="text" id="pin" name="pin" required>
+
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="phone">Phone Number (e.g., +919704592121):</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label>Capture 3 Face Images:</label>
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+            <button type="button" id="captureBtn">Capture Image</button>
+            <p id="captureStatus">Captured 0/3 images</p>
+
+            <button type="submit">Register</button>
+            <button type="button" onclick="window.location.href='/'">Back to Login</button>
+        </form>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const captureStatus = document.getElementById('captureStatus');
+        const registerForm = document.getElementById('registerForm');
+        let capturedImages = [];
+        let stream;
+
+        // Access the webcam
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                alert('Error accessing webcam: ' + err.message);
+            }
+        }
+
+        // Capture an image from the video feed
+        captureBtn.addEventListener('click', () => {
+            if (capturedImages.length >= 3) {
+                alert('You have already captured 3 images!');
+                return;
+            }
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            capturedImages.push(imageData);
+            captureStatus.textContent = `Captured ${capturedImages.length}/3 images`;
+
+            if (capturedImages.length === 3) {
+                captureBtn.disabled = true;
+            }
+        });
+
+        // Handle form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (capturedImages.length !== 3) {
+                alert('Please capture exactly 3 face images before registering.');
+                return;
+            }
+
+            const formData = {
+                initial_balance: document.getElementById('initial_balance').value,
+                pin: document.getElementById('pin').value,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                face_images: capturedImages
+            };
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = '/';
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                alert('Error during registration: ' + err.message);
+            }
+        });
+
+        // Toggle light/dark mode
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeButton();
+        }
+
+        // Update theme button text
+        function updateThemeButton() {
+            const themeBtn = document.querySelector('.theme-btn');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        }
+
+        // Load theme preference and start webcam on page load
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            updateThemeButton();
+            startWebcam();
+        }
+
+        // Stop the webcam when the page unloads
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>

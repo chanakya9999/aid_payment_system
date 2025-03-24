@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment System Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 20px; /* Reduced padding to decrease height */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            flex-grow: 1;
+            text-align: center; /* Center the title */
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .profile-container {
+            position: relative;
+        }
+        .profile-btn {
+            background-color: #06d6a0;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .profile-btn:hover {
+            background-color: #05c28e;
+        }
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            z-index: 1;
+        }
+        .dropdown a {
+            display: block;
+            padding: 10px 20px;
+            color: #333;
+            text-decoration: none;
+        }
+        .dropdown a:hover {
+            background-color: #f0f2f5;
+        }
+        .theme-btn {
+            background-color: #666;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .theme-btn:hover {
+            background-color: #555;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 80%; /* Increased container size */
+            margin: 20px auto;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #06d6a0;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #05c28e;
+        }
+        .messages {
+            margin-top: 20px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        body.dark-mode header {
+            background-color: #2c2c2c;
+        }
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+        body.dark-mode h2,
+        body.dark-mode label {
+            color: #e0e0e0;
+        }
+        body.dark-mode select,
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"] {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        body.dark-mode .dropdown {
+            background-color: #3a3a3a;
+        }
+        body.dark-mode .dropdown a {
+            color: #e0e0e0;
+        }
+        body.dark-mode .dropdown a:hover {
+            background-color: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Aid Payment System</h1>
+        <div class="header-right">
+            <div class="profile-container">
+                <button class="profile-btn" onclick="toggleDropdown()">Profile ({{ current_user.name }})</button>
+                <div class="dropdown" id="profileDropdown">
+                    <a href="/edit_profile">Edit Profile</a>
+                    <a href="/logout">Logout</a>
+                </div>
+            </div>
+            <button class="theme-btn" onclick="toggleTheme()">Toggle Theme</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Welcome, {{ current_user.name }} (ID: {{ current_user_id }})</h2>
+        <p>Role: {{ current_user.role }}</p>
+
+        <!-- Payment Form -->
+        <form method="POST" action="/action">
+            <input type="hidden" name="action" value="pay">
+            <label for="sender_id">Sender ID:</label>
+            <select id="sender_id" name="sender_id">
+                {% if current_user.role == "admin" %}
+                    {% for user_id, user in users.items() %}
+                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="{{ current_user_id }}">{{ current_user_id }} - {{ current_user.name }}</option>
+                {% endif %}
+            </select>
+
+            <label for="receiver_id">Receiver ID:</label>
+            <select id="receiver_id" name="receiver_id">
+                {% for user_id, user in users.items() %}
+                    <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="sender_pin">Sender PIN:</label>
+            <input type="text" id="sender_pin" name="sender_pin" required>
+
+            {% if current_user.role == "admin" %}
+                <label for="receiver_pin">Receiver PIN:</label>
+                <input type="text" id="receiver_pin" name="receiver_pin" required>
+            {% endif %}
+
+            <label for="amount">Amount (Rs):</label>
+            <input type="number" id="amount" name="amount" required>
+
+            <label for="is_online">Transaction Type:</label>
+            <select id="is_online" name="is_online">
+                <option value="yes">Online</option>
+                <option value="no">Offline</option>
+            </select>
+
+            <button type="submit">Send Payment</button>
+        </form>
+
+        <!-- Balance Check Form -->
+        <form method="POST" action="/action">
+            <input type="hidden" name="action" value="balance">
+            <label for="user_id">User ID:</label>
+            <select id="user_id" name="user_id">
+                {% if current_user.role == "admin" %}
+                    {% for user_id, user in users.items() %}
+                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="{{ current_user_id }}">{{ current_user_id }} - {{ current_user.name }}</option>
+                {% endif %}
+            </select>
+
+            <label for="pin">PIN:</label>
+            <input type="text" id="pin" name="pin" required>
+
+            <button type="submit">Check Balance</button>
+        </form>
+
+        <!-- Transaction History Form -->
+        <form method="POST" action="/action">
+            <input type="hidden" name="action" value="transactions">
+            <label for="search_query">Search Transactions (optional):</label>
+            <input type="text" id="search_query" name="search_query" placeholder="Search by wallet or amount">
+            <button type="submit">View Transactions</button>
+        </form>
+
+        <!-- Admin Actions -->
+        {% if current_user.role == "admin" %}
+            <!-- Sync Offline Transactions -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="sync">
+                <button type="submit">Sync Offline Transactions</button>
+            </form>
+
+            <!-- Show Ledger -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="ledger">
+                <button type="submit">Show Ledger</button>
+            </form>
+
+            <!-- Register New User (Admin Form) -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="register">
+                <label for="initial_balance">Initial Balance (Rs):</label>
+                <input type="number" id="initial_balance" name="initial_balance" required>
+
+                <label for="pin">PIN:</label>
+                <input type="text" id="pin" name="pin" required>
+
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" name="phone" required>
+
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" required>
+
+                <button type="submit">Register User (Admin)</button>
+            </form>
+
+            <!-- Delete User -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="delete">
+                <label for="user_id">User ID to Delete:</label>
+                <select id="user_id" name="user_id">
+                    {% for user_id, user in users.items() %}
+                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="pin">PIN:</label>
+                <input type="text" id="pin" name="pin" required>
+
+                <button type="submit">Delete User</button>
+            </form>
+
+            <!-- Reset Transaction Count -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="reset_transaction_count">
+                <label for="user_id">User ID to Reset Transaction Count:</label>
+                <select id="user_id" name="user_id">
+                    {% for user_id, user in users.items() %}
+                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }} (Current Count: {{ user.transaction_count }})</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Reset Transaction Count</button>
+            </form>
+
+            <!-- Export Transactions -->
+            <form method="POST" action="/action">
+                <input type="hidden" name="action" value="export">
+                <button type="submit">Export Transactions to CSV</button>
+            </form>
+        {% endif %}
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message">{{ message | safe }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Toggle profile dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-btn')) {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+        }
+
+        // Toggle light/dark mode
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeButton();
+        }
+
+        // Update theme button text
+        function updateThemeButton() {
+            const themeBtn = document.querySelector('.theme-btn');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        }
+
+        // Load theme preference on page load
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            updateThemeButton();
+        }
+    </script>
+</body>
+</html>
