@@ -17,9 +17,22 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Change this to a secure key in production
+
+# MongoDB connection
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = "mongodb+srv://aidpaymentuser:<cUdkMfZvVWBjwW6t>@cluster0.yyyra.mongodb.net/?retryWrites=true&w=majority&appName=cluster0"
+client = MongoClient(MONGO_URI)
+db = client['AidPaymentSystem']
+users_collection = db['users']
+transactions_collection = db['transactions']
+blockchain_collection = db['blockchain']
+offline_transactions_collection = db['offline_transactions']
 
 # Global variables
 users = {}
@@ -191,92 +204,90 @@ def train_face_recognizer():
     else:
         is_face_recognizer_trained = False
 
-# Function to load users from file
+# Function to migrate existing data to MongoDB
+def migrate_data_to_mongodb():
+    # Migrate users
+    if os.path.exists("users.json"):
+        with open("users.json", "r") as file:
+            users_data = json.load(file)
+            users_data = {int(k): v for k, v in users_data.items()}
+        users_collection.delete_many({})  # Clear existing data
+        for user_id, user in users_data.items():
+            user["_id"] = user_id  # Use user_id as the MongoDB document _id
+            users_collection.update_one({"_id": user_id}, {"$set": user}, upsert=True)
+        print("Migrated users to MongoDB")
+
+    # Migrate transactions
+    if os.path.exists("transactions.json"):
+        with open("transactions.json", "r") as file:
+            transactions_data = json.load(file)
+        transactions_collection.delete_many({})
+        transactions_collection.insert_many(transactions_data)
+        print("Migrated transactions to MongoDB")
+
+    # Migrate blockchain
+    if os.path.exists("blockchain.json"):
+        with open("blockchain.json", "r") as file:
+            blockchain_data = json.load(file)
+        blockchain_collection.delete_many({})
+        blockchain_collection.insert_many(blockchain_data)
+        print("Migrated blockchain to MongoDB")
+
+    # Migrate offline transactions
+    if os.path.exists("offline_transactions.txt"):
+        offline_data = []
+        with open("offline_transactions.txt", "r") as file:
+            for line in file:
+                if line.strip():
+                    try:
+                        from_wallet, to_wallet, amount = line.strip().split(",")
+                        amount = int(amount)
+                        offline_data.append({"from": from_wallet, "to": to_wallet, "amount": amount})
+                    except (ValueError, IndexError):
+                        continue
+        offline_transactions_collection.delete_many({})
+        offline_transactions_collection.insert_many(offline_data)
+        print("Migrated offline transactions to MongoDB")
+
+# Function to load users from MongoDB
 def load_users():
-    filename = "users.json"
     global users
-    if os.path.exists(filename):
-        with open(filename, "r") as file:
-            users = json.load(file)
-            users = {int(k): v for k, v in users.items()}
-        for user_id, user in users.items():
-            if "transaction_count" not in user:
-                user["transaction_count"] = 0
-        save_users()
-    else:
-        users = {
-            94232: {
-                "wallet": "wallet_123",
-                "balance": 90000,
-                "pin": "1234",
-                "name": "ragava",
-                "role": "user",
-                "phone": "+919704592121",
-                "email": "n.prudhvichanakya@gmail.com",
-                "transaction_count": 0
-            },
-            67890: {
-                "wallet": "wallet_456",
-                "balance": 20,
-                "pin": "5678",
-                "name": "Bob",
-                "role": "user",
-                "phone": "+919704592121",
-                "email": "211fa04491@gmail.com",
-                "transaction_count": 0
-            },
-            99999: {
-                "wallet": "wallet_admin",
-                "balance": 100,
-                "pin": "admin",
-                "name": "Admin",
-                "role": "admin",
-                "phone": "+919704592121",
-                "email": "n.prudhvichanakya@gmail.com",
-                "transaction_count": 0
-            }
-        }
-    save_users()
+    users = {}
+    for user in users_collection.find():
+        user_id = user["_id"]
+        user.pop("_id")  # Remove MongoDB's _id field from the user dict
+        users[user_id] = user
+    for user_id, user in users.items():
+        if "transaction_count" not in user:
+            user["transaction_count"] = 0
+            users_collection.update_one({"_id": user_id}, {"$set": {"transaction_count": 0}})
     train_face_recognizer()
 
-# Function to save users to file
+# Function to save users to MongoDB
 def save_users():
-    filename = "users.json"
-    try:
-        with open(filename, "w") as file:
-            json.dump(users, file)
-    except Exception as e:
-        print(f"Error saving users to file: {e}")
+    for user_id, user in users.items():
+        users_collection.update_one({"_id": user_id}, {"$set": user}, upsert=True)
     train_face_recognizer()
 
-# Function to load transactions from file
+# Function to load transactions from MongoDB
 def load_transactions():
-    filename = "transactions.json"
     global transactions
-    if os.path.exists(filename):
-        with open(filename, "r") as file:
-            transactions = json.load(file)
-    else:
-        transactions = []
-    save_transactions()
+    transactions = list(transactions_collection.find())
+    for tx in transactions:
+        tx.pop("_id", None)  # Remove MongoDB's _id field
 
-# Function to save transactions to file
+# Function to save transactions to MongoDB
 def save_transactions():
-    filename = "transactions.json"
-    try:
-        with open(filename, "w") as file:
-            json.dump(transactions, file)
-    except Exception as e:
-        print(f"Error saving transactions to file: {e}")
+    transactions_collection.delete_many({})
+    transactions_collection.insert_many(transactions)
 
-# Function to load blockchain (ledger) from file
+# Function to load blockchain from MongoDB
 def load_blockchain():
-    filename = "blockchain.json"
     global ledger
-    if os.path.exists(filename):
-        with open(filename, "r") as file:
-            ledger = json.load(file)
-    else:
+    ledger = list(blockchain_collection.find())
+    for block in ledger:
+        block.pop("_id", None)
+    if not ledger:
         genesis_block = {
             "index": 0,
             "transaction": {"from": "system", "to": "system", "amount": 0, "online": True, "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
@@ -285,16 +296,24 @@ def load_blockchain():
         }
         genesis_block["hash"] = compute_hash(genesis_block)
         ledger = [genesis_block]
-    save_blockchain()
+        save_blockchain()
 
-# Function to save blockchain to file
+# Function to save blockchain to MongoDB
 def save_blockchain():
-    filename = "blockchain.json"
-    try:
-        with open(filename, "w") as file:
-            json.dump(ledger, file)
-    except Exception as e:
-        print(f"Error saving blockchain to file: {e}")
+    blockchain_collection.delete_many({})
+    blockchain_collection.insert_many(ledger)
+
+# Function to load offline transactions from MongoDB
+def load_offline_transactions():
+    global offline_queue
+    offline_queue = list(offline_transactions_collection.find())
+    for tx in offline_queue:
+        tx.pop("_id", None)
+
+# Function to save offline transactions to MongoDB
+def save_offline_transactions():
+    offline_transactions_collection.delete_many({})
+    offline_transactions_collection.insert_many(offline_queue)
 
 # Function to add a transaction to the blockchain
 def add_to_blockchain(transaction):
@@ -308,26 +327,6 @@ def add_to_blockchain(transaction):
     new_block["hash"] = compute_hash(new_block)
     ledger.append(new_block)
     save_blockchain()
-
-# Function to load offline transactions from file
-def load_offline_transactions():
-    filename = "offline_transactions.txt"
-    global offline_queue
-    offline_queue = []
-    if os.path.exists(filename):
-        try:
-            with open(filename, "r") as file:
-                for line in file:
-                    if line.strip():
-                        try:
-                            from_wallet, to_wallet, amount = line.strip().split(",")
-                            amount = int(amount)
-                            transaction = {"from": from_wallet, "to": to_wallet, "amount": amount}
-                            offline_queue.append(transaction)
-                        except (ValueError, IndexError):
-                            continue
-        except Exception as e:
-            print(f"Error loading offline transactions: {e}")
 
 # Simple PIN-based biometric authentication
 def biometric_auth(user_id, entered_pin):
@@ -374,8 +373,8 @@ def delete_user(user_id, pin):
                 import shutil
                 shutil.rmtree(user_dir)
             del users[user_id]
+            users_collection.delete_one({"_id": user_id})
             output_messages.append(f"<span style='color: #ff6b6b'>User ID {user_id} deleted successfully!</span>")
-            save_users()
             train_face_recognizer()
         else:
             output_messages.append(f"<span style='color: #ff6b6b'>Error: User ID {user_id} not found!</span>")
@@ -459,8 +458,6 @@ def send_payment(sender_id, receiver_id, sender_pin, receiver_pin, amount, is_on
                 output_messages.append(f"<span style='color: #06d6a0'>💸 Sent {amount} Rs from {sender['name']} ({sender['wallet']}) to {receiver['name']} ({receiver['wallet']}) (Online) at {timestamp}</span>")
             else:
                 offline_queue.append(transaction)
-                with open("offline_transactions.txt", "a") as file:
-                    file.write(f"{sender['wallet']},{receiver['wallet']},{amount}\n")
                 output_messages.append(f"<span style='color: #06d6a0'>💸 Sent {amount} Rs from {sender['name']} ({sender['wallet']}) to {receiver['name']} ({receiver['wallet']}) (Offline - Queued) at {timestamp}</span>")
 
             time.sleep(1)
@@ -503,8 +500,6 @@ def send_payment(sender_id, receiver_id, sender_pin, receiver_pin, amount, is_on
                 output_messages.append(f"<span style='color: #06d6a0'>💸 Success! Sent {amount} Rs from {sender['name']} ({sender['wallet']}) to {receiver['name']} ({receiver['wallet']}) (Online) at {timestamp}</span>")
             else:
                 offline_queue.append(transaction)
-                with open("offline_transactions.txt", "a") as file:
-                    file.write(f"{sender['wallet']},{receiver['wallet']},{amount}\n")
                 output_messages.append(f"<span style='color: #06d6a0'>💸 Success! Sent {amount} Rs from {sender['name']} ({sender['wallet']}) to {receiver['name']} ({receiver['wallet']}) (Offline - Queued) at {timestamp}</span>")
             
             sender["transaction_count"] += 1
@@ -571,9 +566,7 @@ def sync_offline():
         send_sms(receiver["phone"], receiver_message)
         send_email(receiver["email"], "Transaction Synced", receiver_message)
 
-    with open("offline_transactions.txt", "w") as file:
-        for tx in offline_queue:
-            file.write(f"{tx['from']},{tx['to']},{tx['amount']}\n")
+    save_offline_transactions()
     save_transactions()
 
 # Show ledger (blockchain)
@@ -981,4 +974,5 @@ def action():
     return render_template('result.html', messages=output_messages)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000) 
+    migrate_data_to_mongodb()  # Run migration once
+    app.run(debug=True, host='127.0.0.1', port=5000)
