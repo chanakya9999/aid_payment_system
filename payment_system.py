@@ -26,7 +26,7 @@ app.secret_key = 'your-secret-key-here'  # Change this to a secure key in produc
 # MongoDB connection
 load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_URI = "mongodb+srv://aidpaymentuser:<cUdkMfZvVWBjwW6t>@cluster0.yyyra.mongodb.net/?retryWrites=true&w=majority&appName=cluster0"
+MONGO_URI = "mongodb+srv://aidpaymentuser:<db_password>@cluster0.yyyra.mongodb.net/?retryWrites=true&w=majority&appName=cluster0"
 client = MongoClient(MONGO_URI)
 db = client['AidPaymentSystem']
 users_collection = db['users']
