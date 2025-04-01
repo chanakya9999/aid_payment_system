@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statement - Payment System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            padding-top: 80px; /* Space for fixed header */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1a3c34;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .messages p {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .statement-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #1a3c34;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the header -->
+    {% include 'header.html' %}
+
+    <div class="container">
+        <h1>Transaction Statement</h1>
+
+        <!-- Messages -->
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message | safe }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- Statement Table -->
+        <div class="statement-container">
+            {% if transaction_data.data[0].message is defined %}
+                <p>{{ transaction_data.data[0].message }}</p>
+            {% else %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Sender Balance</th>
+                            <th>Receiver Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transaction_data.data %}
+                        <tr>
+                            <td>{{ tx.id }}</td>
+                            <td>{{ tx.from }}</td>
+                            <td>{{ tx.to }}</td>
+                            <td>{{ tx.amount }}</td>
+                            <td>{{ tx.status }}</td>
+                            <td>{{ tx.time }}</td>
+                            <td>{{ tx.sender_balance }}</td>
+                            <td>{{ tx.receiver_balance }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

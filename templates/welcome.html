@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Payment System</title>
+    <style>
+        :root {
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --header-bg: #1a3c34;
+            --header-text: #fff;
+            --link-hover: #06d6a0;
+            --container-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-bg: #06d6a0;
+            --button-hover: #05b086;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #2c2c2c;
+            --header-text: #e0e0e0;
+            --link-hover: #0be9b0;
+            --container-bg: #2c2c2c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --button-bg: #0be9b0;
+            --button-hover: #09c998;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--header-bg), #2a9d8f);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInDown 1s ease forwards;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease forwards;
+            animation-delay: 0.5s;
+        }
+
+        .hero .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: var(--button-bg);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 1s;
+            margin: 10px;
+        }
+
+        .hero .btn:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        /* Background Animation */
+        .background-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            left: 80%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 80%;
+            left: 30%;
+            animation-delay: 4s;
+        }
+
+        /* About Us Section */
+        #about-us {
+            padding: 50px 20px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        #about-us h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        #about-us p {
+            font-size: 18px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="background-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        <h1>Welcome to the Payment System</h1>
+        <p>Secure, fast, and reliable transactions at your fingertips.</p>
+        <div>
+            <a href="{{ url_for('login') }}" class="btn">Login</a>
+            <a href="{{ url_for('register') }}" class="btn">Register</a>
+        </div>
+    </section>
+
+    <section id="about-us">
+        <h2>About Us</h2>
+        <p>
+            We are a cutting-edge payment platform designed to make your transactions seamless and secure. 
+            Our system leverages advanced biometric authentication and blockchain technology to ensure 
+            that your money is safe and your transactions are transparent. Whether you're sending money 
+            online or offline, we've got you covered with our robust and user-friendly interface.
+        </p>
+    </section>
+</body>
+</html>

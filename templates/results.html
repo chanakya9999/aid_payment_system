@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Payment System</title>
+    <style>
+        :root {
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --header-bg: #1a3c34;
+            --header-text: #fff;
+            --link-hover: #06d6a0;
+            --container-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-bg: #06d6a0;
+            --button-hover: #05b086;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #2c2c2c;
+            --header-text: #e0e0e0;
+            --link-hover: #0be9b0;
+            --container-bg: #2c2c2c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --button-bg: #0be9b0;
+            --button-hover: #09c998;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--header-bg);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .messages p {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .table-container {
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        [data-theme="dark"] tr:nth-child(even) {
+            background-color: #333;
+        }
+
+        .search-form {
+            margin-bottom: 20px;
+        }
+
+        .search-form input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        .search-form input[type="submit"] {
+            padding: 10px 20px;
+            background-color: var(--button-bg);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-form input[type="submit"]:hover {
+            background-color: var(--button-hover);
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the header -->
+    {% include 'header.html' %}
+
+    <div class="container">
+        <h1>{{ transaction_data.title if transaction_data else "Results" }}</h1>
+
+        <!-- Messages -->
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message | safe }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- Transaction History -->
+        {% if transaction_data %}
+        <div class="table-container">
+            {% if transaction_data.data[0].message is defined %}
+                <p>{{ transaction_data.data[0].message }}</p>
+            {% else %}
+                <form class="search-form" action="{{ url_for('action') }}" method="POST">
+                    <input type="hidden" name="action" value="transactions">
+                    <input type="text" name="search_query" placeholder="Search transactions..." value="{{ search_query if search_query else '' }}">
+                    <input type="submit" value="Search">
+                </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Sender Balance</th>
+                            <th>Receiver Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transaction_data.data %}
+                        <tr>
+                            <td>{{ tx.id }}</td>
+                            <td>{{ tx.from }}</td>
+                            <td>{{ tx.to }}</td>
+                            <td>{{ tx.amount }}</td>
+                            <td>{{ tx.status }}</td>
+                            <td>{{ tx.time }}</td>
+                            <td>{{ tx.sender_balance }}</td>
+                            <td>{{ tx.receiver_balance }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

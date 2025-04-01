@@ -5,280 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Payment System</title>
     <style>
+        :root {
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --header-bg: #1a3c34;
+            --header-text: #fff;
+            --link-hover: #06d6a0;
+            --container-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-bg: #06d6a0;
+            --button-hover: #05b086;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #2c2c2c;
+            --header-text: #e0e0e0;
+            --link-hover: #0be9b0;
+            --container-bg: #2c2c2c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --button-bg: #0be9b0;
+            --button-hover: #09c998;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, var(--header-bg), #2a9d8f);
+            height: 100vh;
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 5px 20px; /* Reduced padding to decrease height */
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-        }
-        header h1 {
-            margin: 0;
-            flex-grow: 1;
-            text-align: center; /* Center the title */
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .theme-btn {
-            background-color: #666;
             color: #fff;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
         }
-        .theme-btn:hover {
-            background-color: #555;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 600px; /* Increased container size */
+
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            width: 100%;
+            max-width: 400px;
             text-align: center;
-            margin: 20px auto;
         }
+
         h2 {
-            color: #333;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .messages {
             margin-bottom: 20px;
         }
-        label {
-            display: block;
-            text-align: left;
-            margin: 10px 0 5px;
-            color: #555;
-        }
-        select, input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #06d6a0;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #05c28e;
-        }
-        #video {
-            width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            display: none;
-        }
-        #canvas {
-            display: none;
-        }
-        .message {
-            margin-top: 10px;
+
+        .messages p {
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 5px;
+            margin: 5px 0;
         }
-        .error {
-            background-color: #ffe6e6;
-            color: #ff6b6b;
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
         }
-        /* Dark mode styles */
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
         }
-        body.dark-mode header {
-            background-color: #2c2c2c;
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
         }
-        body.dark-mode .container {
-            background-color: #2c2c2c;
-            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+
+        .form-group input[type="submit"] {
+            background-color: var(--button-bg);
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        body.dark-mode h2,
-        body.dark-mode label {
-            color: #e0e0e0;
+
+        .form-group input[type="submit"]:hover {
+            background-color: var(--button-hover);
         }
-        body.dark-mode select,
-        body.dark-mode input[type="text"] {
-            background-color: #3a3a3a;
-            color: #e0e0e0;
-            border-color: #555;
+
+        .form-group select {
+            background-color: #fff;
+        }
+
+        .link {
+            color: var(--link-hover);
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Aid Payment System</h1>
-        <div class="header-right">
-            <button class="theme-btn" onclick="toggleTheme()">Toggle Theme</button>
-        </div>
-    </header>
+    <div class="login-container">
+        <h2>Login</h2>
 
-    <div class="container">
-        <h2>Login to Payment System</h2>
-        {% if messages %}
+        <!-- Messages -->
+        <div class="messages">
             {% for message in messages %}
-                <div class="message error">{{ message | safe }}</div>
+                <p>{{ message | safe }}</p>
             {% endfor %}
-        {% endif %}
-        <form id="loginForm" method="POST" action="/login">
-            <label for="auth_type">Authentication Type:</label>
-            <select id="auth_type" name="auth_type" onchange="toggleAuthFields()">
-                <option value="pin">PIN</option>
-                <option value="face">Face Recognition</option>
-            </select>
+        </div>
 
-            <div id="pinFields">
+        <!-- Login Form -->
+        <form id="login-form" action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="auth_type">Authentication Type:</label>
+                <select id="auth_type" name="auth_type" onchange="toggleAuthFields()">
+                    <option value="pin">PIN</option>
+                    <option value="face">Face Recognition</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="user_id">User ID:</label>
-                <select id="user_id" name="user_id" required>
-                    {% for user_id, user in users.items() %}
-                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
-                    {% endfor %}
-                </select>
-
+                <input type="text" id="user_id" name="user_id" required>
+            </div>
+            <div class="form-group" id="pin-field">
                 <label for="pin">PIN:</label>
-                <input type="text" id="pin" name="pin" required>
+                <input type="password" id="pin" name="pin">
             </div>
-
-            <div id="faceFields" style="display: none;">
-                <label for="user_id_face">User ID:</label>
-                <select id="user_id_face" name="user_id_face">
-                    {% for user_id, user in users.items() %}
-                        <option value="{{ user_id }}">{{ user_id }} - {{ user.name }}</option>
-                    {% endfor %}
-                </select>
-
-                <video id="video" autoplay></video>
-                <canvas id="canvas"></canvas>
-                <button type="button" id="captureBtn">Capture Face</button>
+            <div class="form-group" id="face-field" style="display: none;">
+                <label for="face-input">Capture Face:</label>
+                <video id="video" width="100%" height="auto" autoplay></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <button type="button" id="capture-btn">Capture Face</button>
             </div>
-
-            <button type="submit" id="loginBtn">Login</button>
-            <button type="button" onclick="window.location.href='/register'">Register</button>
+            <div class="form-group">
+                <input type="submit" value="Login">
+            </div>
         </form>
+        <a href="{{ url_for('register') }}" class="link">Don't have an account? Register here</a>
+        <a href="{{ url_for('welcome') }}" class="link">Back to Welcome</a>
     </div>
 
     <script>
-        const authType = document.getElementById('auth_type');
-        const pinFields = document.getElementById('pinFields');
-        const faceFields = document.getElementById('faceFields');
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const captureBtn = document.getElementById('captureBtn');
-        const loginForm = document.getElementById('loginForm');
-        let stream;
+        const captureBtn = document.getElementById('capture-btn');
+        let stream = null;
 
         function toggleAuthFields() {
-            if (authType.value === 'pin') {
-                pinFields.style.display = 'block';
-                faceFields.style.display = 'none';
-                video.style.display = 'none';
+            const authType = document.getElementById('auth_type').value;
+            const pinField = document.getElementById('pin-field');
+            const faceField = document.getElementById('face-field');
+
+            if (authType === 'pin') {
+                pinField.style.display = 'block';
+                faceField.style.display = 'none';
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
+                    stream = null;
                 }
+                document.getElementById('pin').required = true;
             } else {
-                pinFields.style.display = 'none';
-                faceFields.style.display = 'block';
-                video.style.display = 'block';
-                startWebcam();
+                pinField.style.display = 'none';
+                faceField.style.display = 'block';
+                document.getElementById('pin').required = false;
+                startVideo();
             }
         }
 
-        async function startWebcam() {
+        async function startVideo() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
             } catch (err) {
-                alert('Error accessing webcam: ' + err.message);
+                console.error("Error accessing webcam:", err);
+                alert("Could not access webcam. Please ensure you have given permission and try again.");
             }
         }
 
-        captureBtn.addEventListener('click', () => {
+        captureBtn.addEventListener('click', async () => {
+            const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
 
-            const userId = document.getElementById('user_id_face').value;
-            fetch('/face_login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ user_id: userId, image: imageData })
-            })
-            .then(response => response.json())
-            .then(result => {
+            const userId = document.getElementById('user_id').value;
+            if (!userId) {
+                alert("Please enter your User ID!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/face_login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData, user_id: userId }),
+                });
+                const result = await response.json();
                 if (result.success) {
-                    window.location.href = '/';
+                    window.location.href = '/dashboard';
                 } else {
                     alert(result.message);
                 }
-            })
-            .catch(err => {
-                alert('Error during face login: ' + err.message);
-            });
-        });
-
-        loginForm.addEventListener('submit', (e) => {
-            if (authType.value === 'face') {
-                e.preventDefault();
+            } catch (err) {
+                console.error("Error during face login:", err);
+                alert("An error occurred during face login. Please try again.");
             }
         });
 
+        // Stop video stream when the page is unloaded
         window.addEventListener('beforeunload', () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
         });
-
-        // Toggle light/dark mode
-        function toggleTheme() {
-            const body = document.body;
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            updateThemeButton();
-        }
-
-        // Update theme button text
-        function updateThemeButton() {
-            const themeBtn = document.querySelector('.theme-btn');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
-        }
-
-        // Load theme preference on page load
-        window.onload = function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-            }
-            updateThemeButton();
-            if (authType.value === 'face') {
-                startWebcam();
-            }
-        }
     </script>
 </body>
 </html>

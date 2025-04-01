@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Payment System</title>
+    <style>
+        :root {
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --header-bg: #1a3c34;
+            --header-text: #fff;
+            --link-hover: #06d6a0;
+            --container-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-bg: #06d6a0;
+            --button-hover: #05b086;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #2c2c2c;
+            --header-text: #e0e0e0;
+            --link-hover: #0be9b0;
+            --container-bg: #2c2c2c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --button-bg: #0be9b0;
+            --button-hover: #09c998;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--header-bg);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .messages p {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .form-section {
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            color: var(--header-bg);
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        .form-group input[type="submit"] {
+            background-color: var(--button-bg);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-group input[type="submit"]:hover {
+            background-color: var(--button-hover);
+        }
+
+        .user-list {
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .user-list h2 {
+            color: var(--header-bg);
+            margin-bottom: 15px;
+        }
+
+        .user-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .user-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+
+        .edit-profile-link {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .edit-profile-link a {
+            color: var(--link-hover);
+            text-decoration: none;
+        }
+
+        .edit-profile-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the header -->
+    {% include 'header.html' %}
+
+    <div class="container">
+        <h1>Welcome, {{ current_user.name }} (ID: {{ current_user_id }})</h1>
+
+        <!-- Edit Profile Link -->
+        <div class="edit-profile-link">
+            <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages">
+            {% for message in messages %}
+                <p>{{ message | safe }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- Payment Form -->
+        <div class="form-section">
+            <h2>Send Payment</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="pay">
+                <div class="form-group">
+                    <label for="sender_id">Sender ID:</label>
+                    <input type="text" id="sender_id" name="sender_id" value="{{ current_user_id }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="receiver_id">Receiver ID:</label>
+                    <input type="text" id="receiver_id" name="receiver_id" required>
+                </div>
+                <div class="form-group">
+                    <label for="sender_pin">Sender PIN:</label>
+                    <input type="password" id="sender_pin" name="sender_pin" required>
+                </div>
+                {% if current_user.role == "admin" %}
+                <div class="form-group">
+                    <label for="receiver_pin">Receiver PIN:</label>
+                    <input type="password" id="receiver_pin" name="receiver_pin" required>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="amount">Amount (Rs):</label>
+                    <input type="number" id="amount" name="amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="is_online">Transaction Type:</label>
+                    <select id="is_online" name="is_online">
+                        <option value="yes">Online</option>
+                        <option value="no">Offline</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Send Payment">
+                </div>
+            </form>
+        </div>
+
+        <!-- Sync Offline Transactions -->
+        <div class="form-section">
+            <h2>Sync Offline Transactions</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="sync">
+                <div class="form-group">
+                    <input type="submit" value="Sync Now">
+                </div>
+            </form>
+        </div>
+
+        <!-- Admin Features -->
+        {% if current_user.role == "admin" %}
+        <div class="form-section">
+            <h2>Admin: Show Ledger</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="logout">
+                <div class="form-group">
+                    <input type="submit" value="Show Ledger">
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Admin: Register New User</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="register">
+                <div class="form-group">
+                    <label for="initial_balance">Initial Balance (Rs):</label>
+                    <input type="number" id="initial_balance" name="initial_balance" required>
+                </div>
+                <div class="form-group">
+                    <label for="pin">PIN:</label>
+                    <input type="password" id="pin" name="pin" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="text" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Register User">
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Admin: Delete User</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="delete">
+                <div class="form-group">
+                    <label for="user_id">User ID:</label>
+                    <input type="text" id="user_id" name="user_id" required>
+                </div>
+                <div class="form-group">
+                    <label for="pin">PIN:</label>
+                    <input type="password" id="pin" name="pin" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Delete User">
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Admin: Reset Transaction Count</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="reset_transaction_count">
+                <div class="form-group">
+                    <label for="user_id">User ID:</label>
+                    <input type="text" id="user_id" name="user_id" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Reset Count">
+                </div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Admin: Export Transactions</h2>
+            <form action="{{ url_for('action') }}" method="POST">
+                <input type="hidden" name="action" value="export">
+                <div class="form-group">
+                    <input type="submit" value="Export to CSV">
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- User List -->
+        <div class="user-list">
+            <h2>Registered Users</h2>
+            <ul>
+                {% for user_id, user in users.items() %}
+                <li>ID: {{ user_id }} | Name: {{ user.name }} | Wallet: {{ user.wallet }} | Balance: {{ user.balance }} Rs | Role: {{ user.role }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

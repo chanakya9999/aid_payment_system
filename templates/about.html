@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Payment System</title>
+    <style>
+        :root {
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --header-bg: #1a3c34;
+            --header-text: #fff;
+            --link-hover: #06d6a0;
+            --container-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-bg: #06d6a0;
+            --button-hover: #05b086;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #2c2c2c;
+            --header-text: #e0e0e0;
+            --link-hover: #0be9b0;
+            --container-bg: #2c2c2c;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --button-bg: #0be9b0;
+            --button-hover: #09c998;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--header-bg);
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the header -->
+    {% include 'header.html' %}
+
+    <div class="container">
+        <h1>About Us</h1>
+        <p>
+            We are a cutting-edge payment platform designed to make your transactions seamless and secure. 
+            Our system leverages advanced biometric authentication and blockchain technology to ensure 
+            that your money is safe and your transactions are transparent. Whether you're sending money 
+            online or offline, we've got you covered with our robust and user-friendly interface.
+        </p>
+        <p>
+            Our mission is to provide a reliable and efficient payment solution for users worldwide, 
+            ensuring that every transaction is fast, secure, and accessible to everyone.
+        </p>
+    </div>
+</body>
+</html>
